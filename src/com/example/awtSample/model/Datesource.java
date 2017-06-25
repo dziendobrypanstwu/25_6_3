@@ -1,8 +1,8 @@
 package com.example.awtSample.model;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Jan PC on 6/25/2017.
@@ -12,40 +12,61 @@ public class Datesource {
     public static final String DB_NAME = "music.db";
     public static final String CONNECTION_STRING = "jdbc:sqlite:/Users/Jan PC/IdeaProjects/25_6_3/" + DB_NAME;
 
-    public static final  String TABLE_ALBUMS = "albums";
-    public static final  String COLUMN_ALBUM_ID = "_id";
-    public static final  String COLUMN_ALBUM_NAME = "name";
-    public static final  String COLUMN_ALBUM_ARTIST = "artist";
+    public static final String TABLE_ALBUMS = "albums";
+    public static final String COLUMN_ALBUM_ID = "_id";
+    public static final String COLUMN_ALBUM_NAME = "name";
+    public static final String COLUMN_ALBUM_ARTIST = "artist";
 
     public static final String TABLE_ARTISTS = "artists";
     public static final String COLUMN_ARTIST_ID = "_id";
     public static final String COLUMN_ARTIST_NAME = "name";
 
-    public static final String TABLE_SONG = "songs";
+    public static final String TABLE_SONGS = "songs";
     public static final String COLUMN_SONG_TRACK = "track";
     public static final String COLUMN_SONG_TITLE = "title";
     public static final String COLUMN_SONG_ALBUM = "album";
 
-    private Connection connection;
+    private Connection conn;
 
-    public boolean open(){
-        try{
-            connection = DriverManager.getConnection(CONNECTION_STRING);
+    public boolean open() {
+        try {
+            conn = DriverManager.getConnection(CONNECTION_STRING);
             return true;
-        } catch (SQLException e) {
-            System.out.println("Couldnt connect to databse: " + e.getMessage());
+        } catch(SQLException e) {
+            System.out.println("Couldn't connect to database: " + e.getMessage());
             return false;
         }
     }
 
-    public void close(){
-        try{
-            if(connection != null){
-                connection.close();
+    public void close() {
+        try {
+            if(conn != null) {
+                conn.close();
             }
-        } catch (SQLException e) {
-            System.out.println("Couldnt close connection: " + e.getMessage());
+        } catch(SQLException e) {
+            System.out.println("Couldn't close connection: " + e.getMessage());
         }
     }
 
+    public List<Artist> queryArtists() {
+
+        try(Statement statement = conn.createStatement();
+            ResultSet results = statement.executeQuery("SELECT * FROM " + TABLE_ARTISTS)) {
+
+            List<Artist> artists = new ArrayList<>();
+            while(results.next()) {
+                Artist artist = new Artist();
+                artist.setId(results.getInt(COLUMN_ARTIST_ID));
+                artist.setName(results.getString(COLUMN_ARTIST_NAME));
+                artists.add(artist);
+            }
+
+            return artists;
+
+        } catch(SQLException e) {
+            System.out.println("Query failed: " + e.getMessage());
+            return null;
+        }
+
+    }
 }
